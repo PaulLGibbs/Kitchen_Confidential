@@ -5,12 +5,24 @@ using UnityEngine;
 public class EnemyCharacter : Character
 {
 
+    [Header("HP Bar Object")]
+    public GameObject hpBar;
+
+    private HealthBar hpInfo;
     private Rigidbody2D body;
 
     private void Start()
     {
         hp = maxHP;
         body = GetComponent<Rigidbody2D>();
+        if (hpBar)
+        {
+            hpInfo = this.GetComponentInChildren<HealthBar>();
+            foreach(SpriteRenderer child in hpBar.GetComponentsInChildren<SpriteRenderer>())
+            {
+                child.enabled = false;
+            }
+        }
     }
 
     public override void OnDealDamage(Character target, int damage)
@@ -34,5 +46,11 @@ public class EnemyCharacter : Character
 
         body.AddForce(-force*5.0f, ForceMode2D.Impulse);
         Debug.Log("Enemy received damage");
+
+        foreach (SpriteRenderer child in hpBar.GetComponentsInChildren<SpriteRenderer>())
+        {
+            child.enabled = true;
+        }
+        hpInfo.ChangeValue(hp, maxHP);
     }
 }

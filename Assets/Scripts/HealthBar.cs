@@ -4,51 +4,39 @@ using UnityEngine;
 
 public class HealthBar : MonoBehaviour
 {
-    public GameObject subject;
-    public GameObject healthBar;
-    public ObjectHealth health;
-    private float healthPercent;
-    public Vector3 respawnPoint;
 
-    public void Kill()
+    private float startTweenFrom = 1.0f;
+    private float tweeningTo = 1.0f;
+    private float tweenStartTime = 0.0f;
+    private float tweenFinishTime = 0.0f;
+
+    private float easeOutCubic(float t, float b, float c, float d)
     {
-        subject.transform.position = respawnPoint;
-        health.health = health.maxHealth;
+        t /= d;
+        t--;
+        return c * (t * t * t + 1) + b;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    public void ChangeValue(int newHP, int maxHP)
     {
-        health = subject.GetComponent<ObjectHealth>();
-        healthPercent = health.health / health.maxHealth;
-        transform.position = new Vector3(subject.transform.position.x - 1, subject.transform.position.y + 1, transform.position.z);
-        respawnPoint = subject.gameObject.transform.position;
-        //Debug.Log(healthPercent);
+        tweeningTo = (float) newHP / (float) maxHP;
+        tweenStartTime = Time.time;
+        tweenFinishTime = tweenStartTime + 0.3f;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Update()
     {
-        healthPercent = health.health / health.maxHealth;
-        //Debug.Log(healthPercent);
-        transform.position = new Vector3(subject.transform.position.x, subject.transform.position.y + 1, transform.position.z);
-        if(healthPercent >= 0)
+        if(Time.time < tweenFinishTime)
         {
-            healthBar.transform.localScale = new Vector2((transform.localScale.x * (healthPercent)), transform.localScale.y);
+            float coeff = easeOutCubic(Time.time - tweenStartTime, startTweenFrom, tweeningTo - startTweenFrom, 0.3f);
+            transform.localScale = new Vector3(coeff, 1, 1);
+            transform.localPosition = new Vector3(-(1.0f - coeff) / 2.0f, 0, 0);
         }
-        if(healthPercent <= 0)
+        else if(startTweenFrom != tweeningTo)
         {
-            if(subject.gameObject.name != "Player")
-            {
-                Destroy(subject);
-                Destroy(gameObject);
-            }
-            else
-            {
-                Kill();
-            }
+            startTweenFrom = tweeningTo;
+            transform.localScale = new Vector3(tweeningTo, 1, 1);
+            transform.localPosition = new Vector3(-(1.0f - tweeningTo) / 2.0f, 0, 0);
         }
     }
-
-
 }
