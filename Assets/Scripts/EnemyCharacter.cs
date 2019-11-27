@@ -42,10 +42,10 @@ public class EnemyCharacter : Character
 
         Vector2 force = new Vector2(sourcePosition.x - selfPosition.x, sourcePosition.y - selfPosition.y).normalized;
 
-        Debug.Log(force);
+        //Debug.Log(force);
 
         body.AddForce(-force*5.0f, ForceMode2D.Impulse);
-        Debug.Log("Enemy received damage");
+        //Debug.Log("Enemy received damage");
 
         foreach (SpriteRenderer child in hpBar.GetComponentsInChildren<SpriteRenderer>())
         {

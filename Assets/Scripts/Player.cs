@@ -9,8 +9,14 @@ public class Player : Character
     public GameObject pivot;
     public GameObject area;
     public GameObject player;
+    public GameObject knifePrefab;
     public float attackCooldown = 0.5f; // cooldown between attacks in seconds
+    public float throwCooldown = 0.5f;  // cooldown between throwing knives
+    public float knifeRechargeCooldown = 3.0f;
+    public int maxKnives = 3;
     private float nextAttack = 0.0f;
+    private float currentKnives;
+    private float nextKnifeRecharge;
 
     [Header("Movement properties")]
     public KeyCode leftKey = KeyCode.A;
@@ -26,6 +32,7 @@ public class Player : Character
     void Start()
     {
         hp = maxHP;
+        currentKnives = maxKnives;
         body = GetComponent<Rigidbody2D>();
     }
 
@@ -34,6 +41,14 @@ public class Player : Character
     {
         if (Input.GetMouseButton(0))
             Attack();
+        if (Input.GetMouseButton(1))
+            KnifeThrow();
+
+        if(Time.time >= nextKnifeRecharge && currentKnives < maxKnives)
+        {
+            currentKnives++;
+            nextKnifeRecharge = Time.time + knifeRechargeCooldown;
+        }
     }
 
     void FixedUpdate()
@@ -52,11 +67,10 @@ public class Player : Character
         body.velocity = new Vector2(vx, vy);
     }
 
-    void Attack()
+    private void Attack()
     {
         if (Time.time < nextAttack) return;
 
-        Debug.Log("Attempting an attack");
         nextAttack = Time.time + attackCooldown;
 
         Collider2D collider = area.GetComponent<Collider2D>();
@@ -72,6 +86,19 @@ public class Player : Character
                 enemy.Damage(this, 1);
             }
         }
+    }
+
+    private void KnifeThrow()
+    {
+        if (Time.time < nextAttack || currentKnives == 0) return;
+
+        nextAttack = Time.time + throwCooldown;
+        currentKnives--;
+        nextKnifeRecharge = Time.time + knifeRechargeCooldown;
+
+        GameObject newKnife = GameObject.Instantiate(knifePrefab, transform.position, pivot.transform.rotation);
+        //newKnife.transform.rotation = pivot.transform.rotation;
+        newKnife.GetComponent<Knife>().Fire(GetComponent<Character>());
     }
 
     public override void OnReceiveDamage(Character source, int damage)
